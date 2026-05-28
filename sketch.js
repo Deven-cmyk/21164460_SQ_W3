@@ -5,8 +5,129 @@ let gameOverTime = 0;
 let winner = "";
 let p1, p2;
 let sparks = [];
-
 let sfxJump, sfxHit, sfxGameOver, bgMusic;
+
+class Fighter {
+  constructor(x, y, themeColor, controls) {
+    this.x = x;
+    this.y = y;
+    this.vy = 0;
+    this.themeColor = themeColor;
+    this.facing = 1;
+    this.controls = controls;
+    this.health = 6;
+    this.isPunching = false;
+    this.punchFrame = 0;
+    this.isHit = false;
+    this.hitTimer = 0;
+  }
+
+  update() {
+    this.handleInput();
+    this.applyPhysics();
+    this.updateAnimations();
+  }
+
+  handleInput() {
+    if (!this.isPunching && !this.isHit) {
+      if (keyIsDown(this.controls.left)) {
+        this.x -= 5;
+        this.facing = -1;
+      }
+      if (keyIsDown(this.controls.right)) {
+        this.x += 5;
+        this.facing = 1;
+      }
+    }
+  }
+
+  applyPhysics() {
+    this.vy += 0.6;
+    this.y += this.vy;
+    if (this.y > 400) {
+      this.y = 400;
+      this.vy = 0;
+    }
+    this.x = constrain(this.x, 20, width - 20);
+  }
+
+  updateAnimations() {
+    if (this.isPunching) {
+      this.punchFrame++;
+      if (this.punchFrame > 15) {
+        this.isPunching = false;
+        this.punchFrame = 0;
+      }
+    }
+    if (this.isHit) {
+      this.hitTimer--;
+      if (this.hitTimer <= 0) this.isHit = false;
+    }
+  }
+
+  punch() {
+    this.isPunching = true;
+    this.punchFrame = 0;
+  }
+
+  takeDamage() {
+    if (!this.isHit) {
+      this.health--;
+      this.isHit = true;
+      this.hitTimer = 20;
+      if (sfxHit && sfxHit.isLoaded()) sfxHit.play();
+
+      if (this.health <= 0) {
+        state = "GAMEOVER";
+        winner = this === p1 ? "PLAYER 2" : "PLAYER 1";
+        gameOverTime = millis();
+
+        if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
+        if (sfxGameOver && sfxGameOver.isLoaded()) sfxGameOver.play();
+      }
+    }
+  }
+
+  draw() {
+    push();
+    translate(this.x, this.y);
+    scale(this.facing, 1);
+    rectMode(CENTER);
+    noStroke();
+
+    if (this.isHit && frameCount % 4 < 2) {
+      fill(255);
+    } else {
+      fill(200);
+    }
+
+    rect(0, -30, 30, 40);
+    rect(0, -60, 20, 20);
+
+    fill(this.themeColor);
+    rect(0, -60, 8, 8);
+    rect(-10, -30, 4, 30);
+
+    fill(150);
+    if (this.isPunching) {
+      rect(25, -35, 40, 10);
+      fill(this.themeColor);
+      rect(45, -35, 15, 15);
+    } else {
+      rect(5, -25, 10, 30);
+    }
+
+    fill(100);
+    if (this.y < 400) {
+      rect(-10, -5, 10, 15);
+      rect(10, -10, 10, 15);
+    } else {
+      rect(-10, 0, 10, 20);
+      rect(10, 0, 10, 20);
+    }
+    pop();
+  }
+}
 
 function preload() {
   sfxJump = loadSound("assets/sound/jump.mp3");
@@ -18,7 +139,6 @@ function preload() {
 function setup() {
   createCanvas(800, 500);
   noSmooth();
-  outputVolume(0.8);
 
   p1 = new Fighter(200, 400, color(0, 166, 255), {
     left: 65,
@@ -72,7 +192,7 @@ function draw() {
 function mousePressed() {
   if (state === "INIT") {
     userStartAudio();
-    if (bgMusic && !bgMusic.isPlaying()) {
+    if (bgMusic && bgMusic.isLoaded() && !bgMusic.isPlaying()) {
       bgMusic.loop();
     }
     state = "START";
@@ -223,128 +343,6 @@ function resetGame() {
   state = "INIT";
 
   if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
-}
-
-class Fighter {
-  constructor(x, y, themeColor, controls) {
-    this.x = x;
-    this.y = y;
-    this.vy = 0;
-    this.themeColor = themeColor;
-    this.facing = 1;
-    this.controls = controls;
-    this.health = 6;
-    this.isPunching = false;
-    this.punchFrame = 0;
-    this.isHit = false;
-    this.hitTimer = 0;
-  }
-
-  update() {
-    this.handleInput();
-    this.applyPhysics();
-    this.updateAnimations();
-  }
-
-  handleInput() {
-    if (!this.isPunching && !this.isHit) {
-      if (keyIsDown(this.controls.left)) {
-        this.x -= 5;
-        this.facing = -1;
-      }
-      if (keyIsDown(this.controls.right)) {
-        this.x += 5;
-        this.facing = 1;
-      }
-    }
-  }
-
-  applyPhysics() {
-    this.vy += 0.6;
-    this.y += this.vy;
-    if (this.y > 400) {
-      this.y = 400;
-      this.vy = 0;
-    }
-    this.x = constrain(this.x, 20, width - 20);
-  }
-
-  updateAnimations() {
-    if (this.isPunching) {
-      this.punchFrame++;
-      if (this.punchFrame > 15) {
-        this.isPunching = false;
-        this.punchFrame = 0;
-      }
-    }
-    if (this.isHit) {
-      this.hitTimer--;
-      if (this.hitTimer <= 0) this.isHit = false;
-    }
-  }
-
-  punch() {
-    this.isPunching = true;
-    this.punchFrame = 0;
-  }
-
-  takeDamage() {
-    if (!this.isHit) {
-      this.health--;
-      this.isHit = true;
-      this.hitTimer = 20;
-      if (sfxHit && sfxHit.isLoaded()) sfxHit.play();
-
-      if (this.health <= 0) {
-        state = "GAMEOVER";
-        winner = this === p1 ? "PLAYER 2" : "PLAYER 1";
-        gameOverTime = millis();
-
-        if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
-        if (sfxGameOver && sfxGameOver.isLoaded()) sfxGameOver.play();
-      }
-    }
-  }
-
-  draw() {
-    push();
-    translate(this.x, this.y);
-    scale(this.facing, 1);
-    rectMode(CENTER);
-    noStroke();
-
-    if (this.isHit && frameCount % 4 < 2) {
-      fill(255);
-    } else {
-      fill(200);
-    }
-
-    rect(0, -30, 30, 40);
-    rect(0, -60, 20, 20);
-
-    fill(this.themeColor);
-    rect(0, -60, 8, 8);
-    rect(-10, -30, 4, 30);
-
-    fill(150);
-    if (this.isPunching) {
-      rect(25, -35, 40, 10);
-      fill(this.themeColor);
-      rect(45, -35, 15, 15);
-    } else {
-      rect(5, -25, 10, 30);
-    }
-
-    fill(100);
-    if (this.y < 400) {
-      rect(-10, -5, 10, 15);
-      rect(10, -10, 10, 15);
-    } else {
-      rect(-10, 0, 10, 20);
-      rect(10, 0, 10, 20);
-    }
-    pop();
-  }
 }
 
 function createSparks(x, y, c) {
