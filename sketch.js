@@ -1,111 +1,87 @@
-let state = "INIT"; // INIT, START, PLAY, GAMEOVER
+let state = "INIT";
 let countdownTimer = 3;
 let lastTick = 0;
 let gameOverTime = 0;
 let winner = "";
-
 let p1, p2;
 let sparks = [];
 
-// Audio variables (Removed sfxStart)
 let sfxJump, sfxHit, sfxGameOver, bgMusic;
 
 function preload() {
-  // IMPORTANT: Make sure your 4 files are named EXACTLY like this in your folder.
-  // Delete the /* and */ once your files are in the folder!
-  /*
-  sfxJump = loadSound('jump.mp3');
-  sfxHit = loadSound('hit.mp3');
-  sfxGameOver = loadSound('gameover.mp3');
-  bgMusic = loadSound('music.mp3');
-  */
+  sfxJump = loadSound("assets/sound/jump.mp3");
+  sfxHit = loadSound("assets/sound/hit.mp3");
+  sfxGameOver = loadSound("assets/sound/gameover.mp3");
+  bgMusic = loadSound("assets/sound/music.mp3");
 }
 
 function setup() {
   createCanvas(800, 500);
-  noSmooth(); // Forces a pixelated, sharp look
-  outputVolume(0.8); // Ensures p5 is outputting audio at 80% volume
+  noSmooth();
+  outputVolume(0.8);
 
-  // Initialize Fighters (x, y, color, controls)
   p1 = new Fighter(200, 400, color(0, 166, 255), {
     left: 65,
     right: 68,
     jump: 87,
     punch: 70,
-  }); // WASD + F
+  });
   p2 = new Fighter(600, 400, color(255, 115, 0), {
     left: 37,
     right: 39,
     jump: 38,
     punch: 191,
-  }); // Arrows + /
-  p2.facing = -1; // P2 faces left initially
-
-  // Notice we REMOVED the bgMusic from setup. It must trigger after the click!
+  });
+  p2.facing = -1;
 }
 
 function draw() {
   drawAtmosphere();
 
   if (state === "INIT") {
-    // 1. CLICK TO START SCREEN
     p1.draw();
     p2.draw();
-
     fill(0, 150);
     rect(0, 0, width, height);
-
     fill(255);
     textAlign(CENTER, CENTER);
     textFont("monospace");
     textSize(30);
-
     if (frameCount % 60 < 30) {
       text("CLICK ANYWHERE TO INITIATE TEST", width / 2, height / 2);
     }
   } else if (state === "START") {
-    // 2. COUNTDOWN SCREEN
     p1.draw();
     p2.draw();
     drawCountdown();
   } else if (state === "PLAY") {
-    // 3. MAIN GAMEPLAY LOOP
     handleCombat();
-
     p1.update();
     p2.update();
     p1.draw();
     p2.draw();
-
     drawHUD();
     updateSparks();
   } else if (state === "GAMEOVER") {
-    // 4. GAME OVER SCREEN
     p1.draw();
     p2.draw();
     drawGameOver();
   }
 }
 
-// --- AUDIO UNLOCK PROTOCOL ---
 function mousePressed() {
   if (state === "INIT") {
-    userStartAudio(); // Force unlock browser audio
-
-    // Play music ONLY AFTER the user clicks
+    userStartAudio();
     if (bgMusic && !bgMusic.isPlaying()) {
       bgMusic.loop();
     }
-
     state = "START";
     lastTick = millis();
   }
 }
 
-// --- GAME ENVIRONMENTS ---
 function drawAtmosphere() {
   background(20, 22, 24);
-
   stroke(40, 45, 48);
   strokeWeight(2);
   for (let i = 0; i < width; i += 50) {
@@ -132,7 +108,6 @@ function drawAtmosphere() {
 function drawCountdown() {
   fill(0, 150);
   rect(0, 0, width, height);
-
   fill(255);
   textAlign(CENTER, CENTER);
   textFont("monospace");
@@ -141,7 +116,6 @@ function drawCountdown() {
   if (millis() - lastTick > 1000) {
     countdownTimer--;
     lastTick = millis();
-    // Removed sfxStart logic from here entirely
   }
 
   if (countdownTimer > 0) {
@@ -171,10 +145,8 @@ function drawHUD() {
 function drawGameOver() {
   fill(0, 180);
   rect(0, 0, width, height);
-
   textAlign(CENTER, CENTER);
   textFont("monospace");
-
   fill(255);
   textSize(60);
   text("TEST CONCLUDED", width / 2, height / 2 - 40);
@@ -194,7 +166,6 @@ function drawGameOver() {
   }
 }
 
-// --- COMBAT LOGIC ---
 function handleCombat() {
   if (p1.isPunching && p1.punchFrame === 5) {
     if (
@@ -251,13 +222,9 @@ function resetGame() {
   countdownTimer = 3;
   state = "INIT";
 
-  // Stop music when resetting to click screen, it restarts on click
   if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
 }
 
-// ============================================================
-// THE FIGHTER CLASS
-// ============================================================
 class Fighter {
   constructor(x, y, themeColor, controls) {
     this.x = x;
@@ -333,7 +300,7 @@ class Fighter {
         winner = this === p1 ? "PLAYER 2" : "PLAYER 1";
         gameOverTime = millis();
 
-        if (bgMusic && bgMusic.isPlaying()) bgMusic.stop(); // Stop music on game over
+        if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
         if (sfxGameOver && sfxGameOver.isLoaded()) sfxGameOver.play();
       }
     }
@@ -352,12 +319,12 @@ class Fighter {
       fill(200);
     }
 
-    rect(0, -30, 30, 40); // Torso
-    rect(0, -60, 20, 20); // Head
+    rect(0, -30, 30, 40);
+    rect(0, -60, 20, 20);
 
     fill(this.themeColor);
-    rect(0, -60, 8, 8); // Eye
-    rect(-10, -30, 4, 30); // Armor
+    rect(0, -60, 8, 8);
+    rect(-10, -30, 4, 30);
 
     fill(150);
     if (this.isPunching) {
@@ -380,7 +347,6 @@ class Fighter {
   }
 }
 
-// --- PARTICLE SYSTEM ---
 function createSparks(x, y, c) {
   for (let i = 0; i < 15; i++) {
     sparks.push({
