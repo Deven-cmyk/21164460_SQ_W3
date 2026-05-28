@@ -1,12 +1,24 @@
-# Aperture Arena
+# Project Title
 
-A custom-built 2v2 fighting game created in p5.js, heavily inspired by the atmospheric, brutalist design of the _Portal_ series. Two test subject robots duel in a gritty testing chamber until their chassis gives out.
+**Aperture Arena**
 
-## 🎨 Theme & Aesthetic
+## Setup and Interaction Instructions
 
-The goal was to strip away the usual colorful sheen of fighting games and replace it with a moody, dark, and pixelated environment. The game relies entirely on p5.js geometric primitives—no image files are used for characters or backgrounds. The UI and character accents utilize the iconic Aperture Science Orange and Cyan.
+### How to Run the Game:
 
-## 🕹️ Controls
+Because this game utilizes `p5.sound` to load external `.mp3` files, modern web browsers will block the audio and freeze the game if you simply double-click the `index.html` file due to strict CORS (Cross-Origin Resource Sharing) security policies.
+
+To run the game properly:
+
+1. Open this repository folder in **Visual Studio Code**.
+2. Install the **Live Server** extension (by Ritwick Dey).
+3. Ensure your audio files (`jump.mp3`, `hit.mp3`, `gameover.mp3`, `music.mp3`) are placed correctly inside an `assets/sounds/` folder in your root directory.
+4. Right-click the `index.html` file and select **"Open with Live Server"**.
+5. When the game loads in your browser window, **click the screen once** to bypass the browser's autoplay block, initiate the test, and unlock the audio engine.
+
+### How to Play:
+
+Two test subject robots duel in a gritty testing chamber until their chassis gives out. Each robot can take 6 hits before failure.
 
 **Player 1 (Blue Chassis):**
 
@@ -17,14 +29,30 @@ The goal was to strip away the usual colorful sheen of fighting games and replac
 **Player 2 (Orange Chassis):**
 
 - **Up Arrow:** Jump
-- **Left / Right Arrows:** Move
+- **Left / Right Arrows:** Move Left / Right
 - **/** (Forward Slash): Punch
 
-## ⚙️ Installation & Running locally
+**Global Controls:**
 
-Because this game utilizes `p5.sound` to load external `.mp3` files, modern browsers will block the audio if you simply double-click the `index.html` file due to CORS security policies.
+- **R:** Restart the protocol (Only available on the Game Over screen).
 
-1. Open this repository in Visual Studio Code.
-2. Install the **Live Server** extension (by Ritwick Dey).
-3. Right-click `index.html` and select **"Open with Live Server"**.
-4. Ensure your audio files (`jump.mp3`, `hit.mp3`, `gameover.mp3`, `music.mp3`, `start.mp3`) are in the root directory and uncomment the audio lines in `preload()`.
+## Assets
+
+- **Visuals:** All geometric shapes, background designs, UI elements, and character chassis were constructed entirely from scratch using native p5.js primitives (`rect`, `line`, etc.). No external image files or sprites were used.
+- **Audio:** \* `jump.mp3`: Sourced from [Insert Website Name, e.g., freesound.org].
+  - `hit.mp3`: Sourced from [Insert Website Name, e.g., freesound.org].
+  - `gameover.mp3`: Sourced from [Insert Website Name, e.g., freesound.org].
+  - `music.mp3`: Sourced from [Insert Website Name, e.g., Portal OST / Valve Corporation].
+
+## References
+
+**Software & Libraries**
+
+1. Lauren McCarthy and Processing Foundation. 2023. p5.js (Version 1.9.0) [Software Library]. Retrieved from https://p5js.org/
+2. Processing Foundation. 2023. p5.sound (Version 1.9.0) [Software Library]. Retrieved from https://p5js.org/reference/#/libraries/p5.sound
+
+**Course Materials** 3. [Insert Professor's Name]. 2024. _Week 3 Example 1: Classes and Fighter Objects_. [Insert University/Course Code, e.g., GBDA 302]. Course Example Code.
+
+**Generative AI** 4. Google. 2024. _Gemini_ (Advanced version) [Large Language Model]. Retrieved from https://gemini.google.com/ (Used for assistance with OOP refactoring, code formatting, and debugging Live Server CORS audio issues).
+
+**Thematic Inspiration** 5. Valve Corporation. 2007. _Portal_ [Video Game]. Valve Corporation. (Used as the core aesthetic, color palette, and atmospheric inspiration for the visual design).
