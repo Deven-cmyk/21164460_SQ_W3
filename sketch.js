@@ -7,23 +7,24 @@ let winner = "";
 let p1, p2;
 let sparks = [];
 
-// Audio variables
-let sfxJump, sfxHit, sfxGameOver, bgMusic, sfxStart;
+// Audio variables (Removed sfxStart)
+let sfxJump, sfxHit, sfxGameOver, bgMusic;
 
 function preload() {
-  // Uncomment these once your files are in the folder!
+  // IMPORTANT: Make sure your 4 files are named EXACTLY like this in your folder.
+  // Delete the /* and */ once your files are in the folder!
   /*
   sfxJump = loadSound('jump.mp3');
   sfxHit = loadSound('hit.mp3');
   sfxGameOver = loadSound('gameover.mp3');
   bgMusic = loadSound('music.mp3');
-  sfxStart = loadSound('start.mp3');
   */
 }
 
 function setup() {
   createCanvas(800, 500);
   noSmooth(); // Forces a pixelated, sharp look
+  outputVolume(0.8); // Ensures p5 is outputting audio at 80% volume
 
   // Initialize Fighters (x, y, color, controls)
   p1 = new Fighter(200, 400, color(0, 166, 255), {
@@ -40,18 +41,14 @@ function setup() {
   }); // Arrows + /
   p2.facing = -1; // P2 faces left initially
 
-  // Uncomment when you have your music file
-  /* if (bgMusic && !bgMusic.isPlaying()) {
-    bgMusic.loop();
-  }
-  */
+  // Notice we REMOVED the bgMusic from setup. It must trigger after the click!
 }
 
 function draw() {
   drawAtmosphere();
 
   if (state === "INIT") {
-    // 1. CLICK TO START SCREEN (Bypasses Browser Audio Blocks)
+    // 1. CLICK TO START SCREEN
     p1.draw();
     p2.draw();
 
@@ -63,7 +60,6 @@ function draw() {
     textFont("monospace");
     textSize(30);
 
-    // Flashing text effect
     if (frameCount % 60 < 30) {
       text("CLICK ANYWHERE TO INITIATE TEST", width / 2, height / 2);
     }
@@ -76,13 +72,11 @@ function draw() {
     // 3. MAIN GAMEPLAY LOOP
     handleCombat();
 
-    // Update and draw fighters
     p1.update();
     p2.update();
     p1.draw();
     p2.draw();
 
-    // UI and Effects
     drawHUD();
     updateSparks();
   } else if (state === "GAMEOVER") {
@@ -96,17 +90,22 @@ function draw() {
 // --- AUDIO UNLOCK PROTOCOL ---
 function mousePressed() {
   if (state === "INIT") {
-    userStartAudio(); // Tells the browser it's okay to play sound now
+    userStartAudio(); // Force unlock browser audio
+
+    // Play music ONLY AFTER the user clicks
+    if (bgMusic && !bgMusic.isPlaying()) {
+      bgMusic.loop();
+    }
+
     state = "START";
-    lastTick = millis(); // Reset timer so countdown is accurate
+    lastTick = millis();
   }
 }
 
 // --- GAME ENVIRONMENTS ---
 function drawAtmosphere() {
-  background(20, 22, 24); // Gritty dark concrete
+  background(20, 22, 24);
 
-  // Background grid/panels (Portal vibe)
   stroke(40, 45, 48);
   strokeWeight(2);
   for (let i = 0; i < width; i += 50) {
@@ -116,7 +115,6 @@ function drawAtmosphere() {
     line(0, i, width, i);
   }
 
-  // Giant moody background doors
   fill(30, 32, 35);
   noStroke();
   rect(150, 100, 200, 300);
@@ -125,7 +123,6 @@ function drawAtmosphere() {
   rect(160, 110, 180, 290);
   rect(460, 110, 180, 290);
 
-  // Concrete floor
   fill(50, 55, 60);
   rect(0, 400, width, 100);
   fill(35, 40, 45);
@@ -144,7 +141,7 @@ function drawCountdown() {
   if (millis() - lastTick > 1000) {
     countdownTimer--;
     lastTick = millis();
-    if (countdownTimer === 0 && sfxStart) sfxStart.play();
+    // Removed sfxStart logic from here entirely
   }
 
   if (countdownTimer > 0) {
@@ -159,17 +156,14 @@ function drawCountdown() {
 
 function drawHUD() {
   noStroke();
-  // P1 Health (Blue)
   fill(50);
   rect(50, 30, 200, 20);
   fill(0, 166, 255);
   rect(50, 30, map(p1.health, 0, 6, 0, 200), 20);
 
-  // P2 Health (Orange)
   fill(50);
   rect(550, 30, 200, 20);
   fill(255, 115, 0);
-  // Draw from the right side for P2
   let p2w = map(p2.health, 0, 6, 0, 200);
   rect(550 + (200 - p2w), 30, p2w, 20);
 }
@@ -191,9 +185,7 @@ function drawGameOver() {
   fill(winColor);
   text(winner + " SURVIVES", width / 2, height / 2 + 20);
 
-  // Wait 2 seconds before showing restart button
   if (millis() - gameOverTime > 2000) {
-    // Flashing effect
     if (frameCount % 60 < 30) {
       fill(255);
       textSize(20);
@@ -204,7 +196,6 @@ function drawGameOver() {
 
 // --- COMBAT LOGIC ---
 function handleCombat() {
-  // Check P1 punching P2
   if (p1.isPunching && p1.punchFrame === 5) {
     if (
       abs(p1.x - p2.x) < 80 &&
@@ -216,7 +207,6 @@ function handleCombat() {
     }
   }
 
-  // Check P2 punching P1
   if (p2.isPunching && p2.punchFrame === 5) {
     if (
       abs(p2.x - p1.x) < 80 &&
@@ -236,11 +226,11 @@ function keyPressed() {
 
     if (keyCode === p1.controls.jump && p1.y === 400) {
       p1.vy = -12;
-      if (sfxJump) sfxJump.play();
+      if (sfxJump && sfxJump.isLoaded()) sfxJump.play();
     }
     if (keyCode === p2.controls.jump && p2.y === 400) {
       p2.vy = -12;
-      if (sfxJump) sfxJump.play();
+      if (sfxJump && sfxJump.isLoaded()) sfxJump.play();
     }
   }
 
@@ -259,26 +249,22 @@ function resetGame() {
   p1.y = 400;
   p2.y = 400;
   countdownTimer = 3;
-  state = "INIT"; // Resets back to the click screen
+  state = "INIT";
+
+  // Stop music when resetting to click screen, it restarts on click
+  if (bgMusic && bgMusic.isPlaying()) bgMusic.stop();
 }
 
 // ============================================================
-// THE FIGHTER CLASS (Matches OOP structure)
+// THE FIGHTER CLASS
 // ============================================================
 class Fighter {
   constructor(x, y, themeColor, controls) {
-    // Position
     this.x = x;
     this.y = y;
-
-    // Physics
     this.vy = 0;
-
-    // Appearance
     this.themeColor = themeColor;
-    this.facing = 1; // 1 right, -1 left
-
-    // Controls & State
+    this.facing = 1;
     this.controls = controls;
     this.health = 6;
     this.isPunching = false;
@@ -307,17 +293,12 @@ class Fighter {
   }
 
   applyPhysics() {
-    // Gravity
     this.vy += 0.6;
     this.y += this.vy;
-
-    // Floor collision
     if (this.y > 400) {
       this.y = 400;
       this.vy = 0;
     }
-
-    // Constrain to screen boundaries
     this.x = constrain(this.x, 20, width - 20);
   }
 
@@ -329,7 +310,6 @@ class Fighter {
         this.punchFrame = 0;
       }
     }
-
     if (this.isHit) {
       this.hitTimer--;
       if (this.hitTimer <= 0) this.isHit = false;
@@ -346,13 +326,15 @@ class Fighter {
       this.health--;
       this.isHit = true;
       this.hitTimer = 20;
-      if (sfxHit) sfxHit.play();
+      if (sfxHit && sfxHit.isLoaded()) sfxHit.play();
 
       if (this.health <= 0) {
         state = "GAMEOVER";
         winner = this === p1 ? "PLAYER 2" : "PLAYER 1";
         gameOverTime = millis();
-        if (sfxGameOver) sfxGameOver.play();
+
+        if (bgMusic && bgMusic.isPlaying()) bgMusic.stop(); // Stop music on game over
+        if (sfxGameOver && sfxGameOver.isLoaded()) sfxGameOver.play();
       }
     }
   }
@@ -361,50 +343,39 @@ class Fighter {
     push();
     translate(this.x, this.y);
     scale(this.facing, 1);
-
     rectMode(CENTER);
     noStroke();
 
-    // Flash white if hit
     if (this.isHit && frameCount % 4 < 2) {
       fill(255);
     } else {
-      fill(200); // Base robot chassis
+      fill(200);
     }
 
-    // Body geometry (Pixelated/Blocky)
     rect(0, -30, 30, 40); // Torso
     rect(0, -60, 20, 20); // Head
 
-    // Theme accents (Portal core colors)
     fill(this.themeColor);
     rect(0, -60, 8, 8); // Eye
-    rect(-10, -30, 4, 30); // Armor accent
+    rect(-10, -30, 4, 30); // Armor
 
-    // Arm logic
     fill(150);
     if (this.isPunching) {
-      // Extended arm
       rect(25, -35, 40, 10);
       fill(this.themeColor);
-      rect(45, -35, 15, 15); // Fist
+      rect(45, -35, 15, 15);
     } else {
-      // Idle arm
       rect(5, -25, 10, 30);
     }
 
-    // Legs
     fill(100);
     if (this.y < 400) {
-      // Jumping legs
       rect(-10, -5, 10, 15);
       rect(10, -10, 10, 15);
     } else {
-      // Standing legs
       rect(-10, 0, 10, 20);
       rect(10, 0, 10, 20);
     }
-
     pop();
   }
 }
@@ -428,13 +399,11 @@ function updateSparks() {
     let s = sparks[i];
     s.x += s.vx;
     s.y += s.vy;
-    s.vy += 0.2; // Spark gravity
+    s.vy += 0.2;
     s.life -= 15;
-
     noStroke();
     fill(red(s.c), green(s.c), blue(s.c), s.life);
-    rect(s.x, s.y, 4, 4); // Square sparks for pixelated look
-
+    rect(s.x, s.y, 4, 4);
     if (s.life <= 0) sparks.splice(i, 1);
   }
 }
