@@ -1,4 +1,4 @@
-let state = "START"; // START, PLAY, GAMEOVER
+let state = "INIT"; // INIT, START, PLAY, GAMEOVER
 let countdownTimer = 3;
 let lastTick = 0;
 let gameOverTime = 0;
@@ -11,7 +11,6 @@ let sparks = [];
 let sfxJump, sfxHit, sfxGameOver, bgMusic, sfxStart;
 
 function preload() {
-  // Ensure you have these files in the same folder as your sketch
   // Uncomment these once your files are in the folder!
   /*
   sfxJump = loadSound('jump.mp3');
@@ -41,42 +40,69 @@ function setup() {
   }); // Arrows + /
   p2.facing = -1; // P2 faces left initially
 
+  // Uncomment when you have your music file
   /* if (bgMusic && !bgMusic.isPlaying()) {
     bgMusic.loop();
   }
   */
-
-  lastTick = millis();
 }
 
 function draw() {
   drawAtmosphere();
 
-  if (state === "START") {
+  if (state === "INIT") {
+    // 1. CLICK TO START SCREEN (Bypasses Browser Audio Blocks)
+    p1.draw();
+    p2.draw();
+
+    fill(0, 150);
+    rect(0, 0, width, height);
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textFont("monospace");
+    textSize(30);
+
+    // Flashing text effect
+    if (frameCount % 60 < 30) {
+      text("CLICK ANYWHERE TO INITIATE TEST", width / 2, height / 2);
+    }
+  } else if (state === "START") {
+    // 2. COUNTDOWN SCREEN
     p1.draw();
     p2.draw();
     drawCountdown();
   } else if (state === "PLAY") {
+    // 3. MAIN GAMEPLAY LOOP
     handleCombat();
 
-    // Update and draw fighters using the refactored OOP structure
+    // Update and draw fighters
     p1.update();
     p2.update();
     p1.draw();
     p2.draw();
 
-    // Draw Health HUD & Sparks
+    // UI and Effects
     drawHUD();
     updateSparks();
   } else if (state === "GAMEOVER") {
+    // 4. GAME OVER SCREEN
     p1.draw();
     p2.draw();
     drawGameOver();
   }
 }
 
-// --- GAME ENVIRONMENTS ---
+// --- AUDIO UNLOCK PROTOCOL ---
+function mousePressed() {
+  if (state === "INIT") {
+    userStartAudio(); // Tells the browser it's okay to play sound now
+    state = "START";
+    lastTick = millis(); // Reset timer so countdown is accurate
+  }
+}
 
+// --- GAME ENVIRONMENTS ---
 function drawAtmosphere() {
   background(20, 22, 24); // Gritty dark concrete
 
@@ -177,7 +203,6 @@ function drawGameOver() {
 }
 
 // --- COMBAT LOGIC ---
-
 function handleCombat() {
   // Check P1 punching P2
   if (p1.isPunching && p1.punchFrame === 5) {
@@ -234,12 +259,11 @@ function resetGame() {
   p1.y = 400;
   p2.y = 400;
   countdownTimer = 3;
-  state = "START";
-  lastTick = millis();
+  state = "INIT"; // Resets back to the click screen
 }
 
 // ============================================================
-// THE FIGHTER CLASS (Refactored to match Week 3 OOP structure)
+// THE FIGHTER CLASS (Matches OOP structure)
 // ============================================================
 class Fighter {
   constructor(x, y, themeColor, controls) {
@@ -263,20 +287,12 @@ class Fighter {
     this.hitTimer = 0;
   }
 
-  // ----------------------------------------------------------
-  // update()
-  // Matches the professor's structure: dividing logic into input and physics.
-  // ----------------------------------------------------------
   update() {
     this.handleInput();
     this.applyPhysics();
     this.updateAnimations();
   }
 
-  // ----------------------------------------------------------
-  // handleInput()
-  // Reads keyboard state for horizontal movement.
-  // ----------------------------------------------------------
   handleInput() {
     if (!this.isPunching && !this.isHit) {
       if (keyIsDown(this.controls.left)) {
@@ -290,10 +306,6 @@ class Fighter {
     }
   }
 
-  // ----------------------------------------------------------
-  // applyPhysics()
-  // Handles gravity and keeps the robots on the screen.
-  // ----------------------------------------------------------
   applyPhysics() {
     // Gravity
     this.vy += 0.6;
@@ -309,10 +321,6 @@ class Fighter {
     this.x = constrain(this.x, 20, width - 20);
   }
 
-  // ----------------------------------------------------------
-  // updateAnimations()
-  // Custom method to handle the timing of hits and punches.
-  // ----------------------------------------------------------
   updateAnimations() {
     if (this.isPunching) {
       this.punchFrame++;
@@ -328,9 +336,6 @@ class Fighter {
     }
   }
 
-  // ----------------------------------------------------------
-  // Combat Methods
-  // ----------------------------------------------------------
   punch() {
     this.isPunching = true;
     this.punchFrame = 0;
@@ -352,10 +357,6 @@ class Fighter {
     }
   }
 
-  // ----------------------------------------------------------
-  // draw()
-  // Matches the professor's draw() convention for class rendering
-  // ----------------------------------------------------------
   draw() {
     push();
     translate(this.x, this.y);
@@ -409,7 +410,6 @@ class Fighter {
 }
 
 // --- PARTICLE SYSTEM ---
-
 function createSparks(x, y, c) {
   for (let i = 0; i < 15; i++) {
     sparks.push({
