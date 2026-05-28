@@ -130,10 +130,10 @@ class Fighter {
 }
 
 function preload() {
-  sfxJump = loadSound("assets/sound/jump.mp3");
-  sfxHit = loadSound("assets/sound/hit.mp3");
-  sfxGameOver = loadSound("assets/sound/gameover.mp3");
-  bgMusic = loadSound("assets/sound/music.mp3");
+  sfxJump = loadSound("assets/sounds/jump.mp3");
+  sfxHit = loadSound("assets/sounds/hit.mp3");
+  sfxGameOver = loadSound("assets/sounds/gameover.mp3");
+  bgMusic = loadSound("assets/sounds/music.mp3");
 }
 
 function setup() {
