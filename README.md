@@ -56,3 +56,4 @@ Two test subject robots duel in a gritty testing chamber until their chassis giv
 **Generative AI** 4. Google. 2024. _Gemini_ (Advanced version) [Large Language Model]. Retrieved from https://gemini.google.com/ (Used for assistance with OOP refactoring, code formatting, and debugging Live Server CORS audio issues).
 
 **Thematic Inspiration** 5. Valve Corporation. 2007. _Portal_ [Video Game]. Valve Corporation. (Used as the core aesthetic, color palette, and atmospheric inspiration for the visual design).
+s
